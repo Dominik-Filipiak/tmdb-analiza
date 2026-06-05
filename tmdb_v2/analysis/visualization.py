@@ -1,5 +1,5 @@
 """
-analiza/wizualizacja.py
+analysis/visualization.py
 =======================
 Moduł odpowiedzialny wyłącznie za generowanie wykresów (Matplotlib).
 """
@@ -192,7 +192,8 @@ def plot_genre_comparison(df_top, top_genres, boxplot_data, correlation, poly_co
     ax2 = fig.add_subplot(gs[1])
 
     bp = ax1.boxplot(boxplot_data, patch_artist=True, notch=False, vert=True, widths=0.55,
-                     medianprops={"color": "#000", "linewidth": 2}, whiskerprops={"color": GRAY, "linewidth": 1},
+                     medianprops={"color": "#000", "linewidth": 2},
+                     whiskerprops={"color": GRAY, "linewidth": 1},
                      capprops={"color": GRAY, "linewidth": 1.5},
                      flierprops={"marker": "o", "markersize": 3, "markerfacecolor": "#333", "linestyle": "none"})
 
@@ -202,4 +203,23 @@ def plot_genre_comparison(df_top, top_genres, boxplot_data, correlation, poly_co
 
     ax1.set_xticks(range(1, len(top_genres) + 1))
     ax1.set_xticklabels(top_genres, rotation=30, ha="right", fontsize=8, color=TEXT_COLOR)
-    ax1.set_ylabel
+    ax1.set_ylabel("Ocena (vote_average)", color=GRAY)
+    _style_ax(ax1, "Rozkład ocen wg gatunku")
+
+    # 2. Wykres korelacji (Scatter plot)
+    x = df_top["popularity"].values
+    y = df_top["vote_average"].values
+    ax2.scatter(x, y, alpha=0.3, color=ACCENT, s=15)
+
+    # Linia trendu
+    x_range = np.linspace(x.min(), x.max(), 100)
+    ax2.plot(x_range, np.polyval(poly_coeff, x_range), color="#ff6b6b", lw=2, label=f"R = {correlation}")
+
+    ax2.set_xlabel("Popularność")
+    ax2.set_ylabel("Ocena")
+    ax2.legend(facecolor=BG_SEC, edgecolor=GRID_COLOR, labelcolor=TEXT_COLOR)
+    _style_ax(ax2, f"Korelacja: Popularność vs Ocena (R={correlation})")
+
+    fig.suptitle("Analiza porównawcza gatunków", color=ACCENT, fontsize=13, fontweight="bold")
+    fig.tight_layout()
+    return fig

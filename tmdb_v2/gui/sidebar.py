@@ -1,5 +1,5 @@
 """
-gui/panel_boczny.py
+gui/sidebar.py
 ===================
 Moduł odpowiedzialny za lewy panel sterowania (View).
 """
@@ -12,7 +12,7 @@ BG_SEC, BG_TERT, BG_QUART = "#141414", "#1c1c1c", "#242424"
 ACCENT, GRAY, GRAY_LIGHT, TEXT_COLOR, FRAME_COL = "#00c030", "#666666", "#999999", "#e8e6e1", "#2a2a2a"
 
 
-class PanelBoczny(tk.Frame):
+class Sidebar(tk.Frame):
     """Panel boczny z parametrami i przyciskami (UI)."""
 
     def __init__(self, parent, available_analyses, on_run_callback, on_clear_callback):

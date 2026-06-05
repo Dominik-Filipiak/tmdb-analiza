@@ -1,5 +1,5 @@
 """
-analiza/dane.py
+analysis/data.py
 ===============
 Moduł odpowiedzialny wyłącznie za przetwarzanie danych i statystykę (Pandas / Numpy).
 """
