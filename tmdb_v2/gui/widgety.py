@@ -68,7 +68,7 @@ class RamkaWynikow(tk.Frame):
             relief="flat", bd=0, cursor="hand2",
             padx=10, pady=0,
             activebackground=BG3, activeforeground=CZERW,
-            command=self.wyczysc,
+            command=self.clear_results,
         )
         # ✕ zaczyna schowany – pojawi się gdy są wyniki
         self._btn_x.bind("<Enter>", lambda e: self._btn_x.config(fg=CZERW))
@@ -107,28 +107,31 @@ class RamkaWynikow(tk.Frame):
 
     # ── publiczne API ─────────────────────────────────────────
 
-    def wyswietl(self, fig: Figure, nazwa: str = "",
-                 df_filmy=None, df_dane=None):
+    def display_results(self, fig: Figure, title: str = "",
+                        df_movies=None, df_data=None):
         self._wyczysc_tabs()
-        self._analiza_txt.set(f"  {nazwa}" if nazwa else "")
-        # Pokaż przycisk ✕ — jest wynik do zamknięcia
+        self._analiza_txt.set(f"  {title}" if title else "")
+
         self._btn_x.pack(side="right", fill="y")
+
         self._osadz_wykres(fig)
-        if df_filmy is not None and not df_filmy.empty:
-            self._wypelnij_filmy(df_filmy)
+
+        if df_movies is not None and not df_movies.empty:
+            self._wypelnij_filmy(df_movies)
         else:
             _placeholder(self.tab_filmy, "Brak listy filmów dla tej analizy.")
-        if df_dane is not None and not df_dane.empty:
-            self._wypelnij_dane(df_dane)
+
+        if df_data is not None and not df_data.empty:
+            self._wypelnij_dane(df_data)
         else:
             _placeholder(self.tab_dane, "Brak tabeli danych.")
+
         self.nb.select(0)
 
-    def wyczysc(self):
+    def clear_results(self):
         self._wyczysc_tabs()
         self._stan_pusty()
         self._analiza_txt.set("  Wybierz analizę po lewej i kliknij ▶ Uruchom")
-        # Schowaj ✕ — brak wyników do zamknięcia
         self._btn_x.pack_forget()
 
     # ── prywatne ─────────────────────────────────────────────
@@ -388,11 +391,11 @@ class PasekStatusu(tk.Frame):
 
         self._dot_job = None
 
-    def ustaw(self, tekst):
+    def set_status(self, tekst):
         self._zatrzymaj_animacje()
         self._var.set(tekst)
 
-    def ladowanie(self, baza="Pobieranie danych"):
+    def start_loading(self, baza="Pobieranie danych"):
         self._lbl.config(fg="#4daaff")
         self._dot = 0
         self._dot_baza = baza
@@ -410,10 +413,10 @@ class PasekStatusu(tk.Frame):
             self._dot_job = None
 
     def set_status(self, msg):
-        self.ustaw(msg)
+        self.set_status(msg)
 
     def start_loading(self, msg):
-        self.ladowanie(msg)
+        self.start_loading(msg)
 
 # ══════════════════════════════════════════════════════════════
 # Helpers
