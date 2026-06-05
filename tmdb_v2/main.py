@@ -4,7 +4,7 @@ main.py – Analiza Danych Filmowych TMDB  v2.1
 Punkt wejściowy aplikacji. Uruchamia główny Kontroler.
 """
 
-from kontroler import Kontroler
+from controller import Kontroler
 
 def main():
     app = Kontroler()

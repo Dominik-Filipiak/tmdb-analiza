@@ -1,5 +1,5 @@
 """
-kontroler.py
+controller.py
 ============
 Kontroler (Controller) zarządzający przepływem danych między Modelem a Widokiem.
 """
@@ -11,8 +11,8 @@ import matplotlib
 matplotlib.use("TkAgg")
 
 from api.tmdb_client import TMDBClient
-from analiza import dane, wizualizacja
-from gui.widok_glowny import WidokGlowny
+from analysis import data, visualization
+from gui.main_view import MainView
 
 
 class Kontroler:
@@ -29,7 +29,7 @@ class Kontroler:
         }
 
         # 1. Inicjalizacja Widoku
-        self.view = WidokGlowny(analyses_dict=self.analyses, on_run_callback=self.run_analysis)
+        self.view = MainView(analyses_dict=self.analyses, on_run_callback=self.run_analysis)
 
         # 2. Inicjalizacja Modelu (API) w tle
         self.view.start_loading("Łączenie z TMDB API")
@@ -103,21 +103,21 @@ class Kontroler:
         self.view.set_status(f"✔  {title}  ·  {total_count} filmów")
 
     def run_popular_genres(self, df):
-        stats = dane.process_popular_genres(df)
-        return wizualizacja.plot_genre_popularity(stats.head(10)), stats
+        stats = data.process_popular_genres(df)
+        return visualization.plot_genre_popularity(stats.head(10)), stats
 
     def run_rating_distribution(self, df):
-        r, kx, ky, stats = dane.process_rating_distribution(df)
-        return wizualizacja.plot_rating_distribution(r, kx, ky, stats), stats
+        r, kx, ky, stats = data.process_rating_distribution(df)
+        return visualization.plot_rating_distribution(r, kx, ky, stats), stats
 
     def run_time_trends(self, df):
-        trends = dane.process_time_trends(df)
-        return wizualizacja.plot_time_trends(trends), trends
+        trends = data.process_time_trends(df)
+        return visualization.plot_time_trends(trends), trends
 
     def run_top_movies(self, df):
-        top = dane.process_top_movies(df)
-        return wizualizacja.plot_top_movies(top), top
+        top = data.process_top_movies(df)
+        return visualization.plot_top_movies(top), top
 
     def run_genre_comparison(self, df):
-        top_df, stats, tg, bp_data, corr, poly = dane.process_genre_comparison(df)
-        return wizualizacja.plot_genre_comparison(top_df, tg, bp_data, corr, poly), stats
+        top_df, stats, tg, bp_data, corr, poly = data.process_genre_comparison(df)
+        return visualization.plot_genre_comparison(top_df, tg, bp_data, corr, poly), stats

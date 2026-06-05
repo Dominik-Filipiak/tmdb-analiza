@@ -1,5 +1,5 @@
 """
-gui/widgety.py  –  TMDB Analiza v2.1
+gui/widgets.py  –  TMDB Analiza v2.1
 =====================================
 Widżety GUI: ciemny motyw inspirowany Letterboxd, akcent #00c030.
 """
@@ -38,7 +38,7 @@ CZERW = "#ff4444"
 # RamkaWynikow  –  obszar z zakładkami + przycisk zamknięcia
 # ══════════════════════════════════════════════════════════════
 
-class RamkaWynikow(tk.Frame):
+class ResultsFrame(tk.Frame):
     """Notebook (Wykres / Filmy / Dane) z belką tytułową i przyciskiem ✕."""
 
     def __init__(self, rodzic, **kw):
@@ -46,11 +46,11 @@ class RamkaWynikow(tk.Frame):
         super().__init__(rodzic, **kw)
         self._canvas      = None
         self._analiza_txt = tk.StringVar(value="")
-        self._zbuduj()
+        self._build_results_interface()
 
     # ── budowanie ─────────────────────────────────────────────
 
-    def _zbuduj(self):
+    def _build_results_interface(self):
         # Belka nad zakładkami: nazwa aktywnej analizy + przycisk ✕
         self._belka = tk.Frame(self, bg=BG3, height=34)
         self._belka.pack(fill="x")
@@ -61,7 +61,6 @@ class RamkaWynikow(tk.Frame):
             font=("Segoe UI", 9), fg=SZARY2, bg=BG3, anchor="w", padx=14)
         self._lbl_analiza.pack(side="left", fill="y")
 
-        # Przycisk zamknięcia (wyczyść wyniki)
         self._btn_x = tk.Button(
             self._belka, text="✕",
             font=("Segoe UI", 11), fg=SZARY, bg=BG3,
@@ -70,14 +69,11 @@ class RamkaWynikow(tk.Frame):
             activebackground=BG3, activeforeground=CZERW,
             command=self.clear_results,
         )
-        # ✕ zaczyna schowany – pojawi się gdy są wyniki
         self._btn_x.bind("<Enter>", lambda e: self._btn_x.config(fg=CZERW))
         self._btn_x.bind("<Leave>", lambda e: self._btn_x.config(fg=SZARY))
 
-        # Cienka linia separatora
         tk.Frame(self, bg=RAMKA, height=1).pack(fill="x")
 
-        # Notebook
         styl = ttk.Style()
         styl.theme_use("default")
         styl.configure("LB.TNotebook", background=BG, borderwidth=0,
@@ -103,58 +99,58 @@ class RamkaWynikow(tk.Frame):
         # Stan startowy: schowaj ✕, ustaw hint
         self._btn_x.pack_forget()
         self._analiza_txt.set("  Wybierz analizę po lewej i kliknij ▶ Uruchom")
-        self._stan_pusty()
+        self._empty_state()
 
     # ── publiczne API ─────────────────────────────────────────
 
     def display_results(self, fig: Figure, title: str = "",
                         df_movies=None, df_data=None):
-        self._wyczysc_tabs()
+        self._clear_tab_contents()
         self._analiza_txt.set(f"  {title}" if title else "")
 
         self._btn_x.pack(side="right", fill="y")
 
-        self._osadz_wykres(fig)
+        self._embed_plot(fig)
 
         if df_movies is not None and not df_movies.empty:
-            self._wypelnij_filmy(df_movies)
+            self._render_movie_list(df_movies)
         else:
             _placeholder(self.tab_filmy, "Brak listy filmów dla tej analizy.")
 
         if df_data is not None and not df_data.empty:
-            self._wypelnij_dane(df_data)
+            self._render_data_table(df_data)
         else:
             _placeholder(self.tab_dane, "Brak tabeli danych.")
 
         self.nb.select(0)
 
     def clear_results(self):
-        self._wyczysc_tabs()
-        self._stan_pusty()
+        self._clear_tab_contents()
+        self._empty_state()
         self._analiza_txt.set("  Wybierz analizę po lewej i kliknij ▶ Uruchom")
         self._btn_x.pack_forget()
 
     # ── prywatne ─────────────────────────────────────────────
 
-    def _wyczysc_tabs(self):
+    def _clear_tab_contents(self):
         for tab in (self.tab_wykres, self.tab_filmy, self.tab_dane):
             for w in tab.winfo_children():
                 w.destroy()
         self._canvas = None
 
-    def _stan_pusty(self):
+    def _empty_state(self):
         _placeholder(self.tab_wykres,
                      "Wybierz analizę w panelu po lewej\ni kliknij  ▶  Uruchom",
                      duzy=True)
         _placeholder(self.tab_filmy, "Tu pojawią się filmy.")
         _placeholder(self.tab_dane,  "Tu pojawi się tabela danych.")
 
-    def _osadz_wykres(self, fig: Figure):
+    def _embed_plot(self, fig: Figure):
         canvas = FigureCanvasTkAgg(fig, master=self.tab_wykres)
         canvas.draw()
         canvas.get_tk_widget().pack(fill="both", expand=True)
         tb = NavigationToolbar2Tk(canvas, self.tab_wykres)
-        # Stylizacja paska narzędzi matplotlib
+
         tb.config(bg=BG3)
         for child in tb.winfo_children():
             try:
@@ -165,7 +161,7 @@ class RamkaWynikow(tk.Frame):
         tb.update()
         self._canvas = canvas
 
-    def _wypelnij_filmy(self, df):
+    def _render_movie_list(self, df):
         outer = tk.Frame(self.tab_filmy, bg=BG)
         outer.pack(fill="both", expand=True)
 
@@ -184,9 +180,9 @@ class RamkaWynikow(tk.Frame):
                    lambda e: c.yview_scroll(int(-1*(e.delta/120)), "units"))
 
         for i, (_, r) in enumerate(df.iterrows(), 1):
-            KartaFilmu(wew, i, r).pack(fill="x", padx=10, pady=3)
+            MovieCard(wew, i, r).pack(fill="x", padx=10, pady=3)
 
-    def _wypelnij_dane(self, df):
+    def _render_data_table(self, df):
         df_d = df.copy()
         if "genres" in df_d.columns:
             df_d["genres"] = df_d["genres"].apply(
@@ -231,7 +227,7 @@ class RamkaWynikow(tk.Frame):
 # KartaFilmu
 # ══════════════════════════════════════════════════════════════
 
-class KartaFilmu(tk.Frame):
+class MovieCard(tk.Frame):
     """Karta: numer | plakat | tytuł · ocena · głosy · tagi · link Letterboxd."""
 
     POSTER_W = 60
@@ -243,13 +239,13 @@ class KartaFilmu(tk.Frame):
                          highlightbackground=RAMKA,
                          highlightthickness=1, **kw)
         self._img = None
-        self._zbuduj(numer, dane)
+        self._build(numer, dane)
 
         # Hover: podświetlenie ramki
         self.bind("<Enter>", lambda e: self.config(highlightbackground=AKCJA2))
         self.bind("<Leave>", lambda e: self.config(highlightbackground=RAMKA))
 
-    def _zbuduj(self, n, d):
+    def _build(self, n, d):
         bg = BG2
 
         # Numer porządkowy
@@ -266,7 +262,7 @@ class KartaFilmu(tk.Frame):
 
         poster_path = d.get("poster_path")
         if PIL_OK and poster_path:
-            self.after(80, lambda: self._zaladuj_plakat(poster_path))
+            self.after(80, lambda: self._load_poster(poster_path))
         else:
             tk.Label(self.lbl_poster, text="🎬", font=("", 18),
                      bg="#0a0a0a", fg="#2a2a2a"
@@ -333,7 +329,7 @@ class KartaFilmu(tk.Frame):
         lbl_lb.bind("<Enter>", lambda e: lbl_lb.config(fg=AKCJA))
         lbl_lb.bind("<Leave>", lambda e: lbl_lb.config(fg="#1c4a28"))
 
-    def _zaladuj_plakat(self, path: str):
+    def _load_poster(self, path: str):
         try:
             url = f"https://image.tmdb.org/t/p/w92{path}"
             with urllib.request.urlopen(url, timeout=5) as r:
@@ -369,7 +365,7 @@ class TagLabel(tk.Label):
 # PasekStatusu
 # ══════════════════════════════════════════════════════════════
 
-class PasekStatusu(tk.Frame):
+class StatusBar(tk.Frame):
     def __init__(self, rodzic, **kw):
         kw.setdefault("bg", "#0a0a0a")
         kw.setdefault("height", 28)
@@ -391,32 +387,35 @@ class PasekStatusu(tk.Frame):
 
         self._dot_job = None
 
-    def set_status(self, tekst):
-        self._zatrzymaj_animacje()
+    def _set_status(self, tekst):
+        self._stop_animation()
         self._var.set(tekst)
 
-    def start_loading(self, baza="Pobieranie danych"):
+    def _start_loading(self, baza="Pobieranie danych"):
+        self._stop_animation() # Dodane dla bezpieczeństwa
         self._lbl.config(fg="#4daaff")
         self._dot = 0
         self._dot_baza = baza
 
-        def _krok():
+        def _step():
             self._dot = (self._dot + 1) % 4
             self._var.set(self._dot_baza + "." * self._dot)
-            self._dot_job = self.after(380, _krok)
+            self._dot_job = self.after(380, _step)
 
-        _krok()
+        _step()
 
-    def _zatrzymaj_animacje(self):
+    def _stop_animation(self):
         if self._dot_job:
             self.after_cancel(self._dot_job)
             self._dot_job = None
 
+    # POPRAWKA PONIŻEJ:
     def set_status(self, msg):
-        self.set_status(msg)
+        self._set_status(msg)
 
     def start_loading(self, msg):
-        self.start_loading(msg)
+        self._start_loading(msg)
+
 
 # ══════════════════════════════════════════════════════════════
 # Helpers

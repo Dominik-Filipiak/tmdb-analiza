@@ -1,19 +1,19 @@
 """
-gui/widok_glowny.py
+gui/main_view.py
 ===================
 Główny widok aplikacji (Main View). Inicjalizuje i układa wszystkie widgety.
 """
 
 import tkinter as tk
-from .widgety import RamkaWynikow, PasekStatusu
-from .panel_boczny import PanelBoczny
+from .widgets import ResultsFrame, StatusBar
+from .sidebar import Sidebar
 
 # ── Palette ────────────────────────────────────────────────────
 BG_MAIN, BG_SEC = "#0d0d0d", "#141414"
 TEXT_COLOR, GRAY, FRAME_COL = "#e8e6e1", "#666666", "#2a2a2a"
 
 
-class WidokGlowny(tk.Tk):
+class MainView(tk.Tk):
     def __init__(self, analyses_dict, on_run_callback):
         super().__init__()
         self.title("TMDB · Analiza Filmów")
@@ -42,16 +42,16 @@ class WidokGlowny(tk.Tk):
         main_frame.grid_columnconfigure(2, weight=1)
         main_frame.grid_rowconfigure(0, weight=1)
 
-        self.results_frame = RamkaWynikow(main_frame, bg=BG_MAIN)
+        self.results_frame = ResultsFrame(main_frame, bg=BG_MAIN)
         self.results_frame.grid(row=0, column=2, sticky="nsew")
         tk.Frame(main_frame, bg=FRAME_COL, width=1).grid(row=0, column=1, sticky="ns")
 
         # Panel boczny
-        self.sidebar = PanelBoczny(main_frame, self.analyses_dict, self.on_run_callback,
-                                   self.results_frame.clear_results)
+        self.sidebar = Sidebar(main_frame, self.analyses_dict, self.on_run_callback,
+                               self.results_frame.clear_results)
         self.sidebar.grid(row=0, column=0, sticky="nsw")
 
-        self.status_bar = PasekStatusu(self)
+        self.status_bar = StatusBar(self)
         self.status_bar.pack(fill="x", side="bottom")
 
     # ── Metody pomocnicze dla Kontrolera ──
