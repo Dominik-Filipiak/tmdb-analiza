@@ -39,8 +39,6 @@ class Kontroler:
         """Uruchamia pętlę zdarzeń interfejsu graficznego."""
         self.view.mainloop()
 
-    # ── Logika biznesowa i sterowanie ──
-
     def _init_client(self):
         try:
             self.api_client = TMDBClient()
@@ -74,7 +72,7 @@ class Kontroler:
 
     def _worker_thread(self, params):
         try:
-            df = self.api_client.pobierz_filmy(rok_od=params["year_from"], rok_do=params["year_to"],
+            df = self.api_client.download_movies(rok_od=params["year_from"], rok_do=params["year_to"],
                                                strony=params["pages"])
             if df.empty:
                 self.view.after(0, lambda: messagebox.showwarning("Brak", "Brak danych z API."))
