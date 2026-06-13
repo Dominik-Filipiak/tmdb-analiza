@@ -11,7 +11,6 @@ import requests
 import pandas as pd
 from dotenv import load_dotenv
 
-# Wczytanie zmiennych środowiskowych z pliku .env
 load_dotenv()
 
 TMDB_BASE    = "https://api.themoviedb.org/3"
@@ -25,7 +24,6 @@ class TMDBClient:
     """Klient REST API TMDB. Wszystkie żądania przez _get()."""
 
     def __init__(self, api_key: str = None):
-        # Jeśli nie podano klucza, bierze ten z pliku .env
         self.api_key = api_key or TMDB_API_KEY
         if not self.api_key:
             raise ValueError("Brak klucza API! Upewnij się, że plik .env zawiera TMDB_API_KEY.")
@@ -34,9 +32,8 @@ class TMDBClient:
         self._session = requests.Session()
         self._load_genres()
 
-    # ── publiczne ────────────────────────────────────────────
 
-    def pobierz_filmy(self, rok_od=2010, rok_do=2024, strony=5) -> pd.DataFrame:
+    def download_movies(self, rok_od=2010, rok_do=2024, strony=5) -> pd.DataFrame:
         """Pobiera filmy z Discover API i zwraca DataFrame."""
         records: list[dict] = []
         for page_num in range(1, strony + 1):
@@ -58,7 +55,7 @@ class TMDBClient:
         """Zwraca pełny URL plakatu lub None."""
         return f"{TMDB_IMG}{path}" if path else None
 
-    def pobierz_plakaty(self, df: pd.DataFrame) -> dict[int, str | None]:
+    def download_posters(self, df: pd.DataFrame) -> dict[int, str | None]:
         """
         Dla każdego wiersza df zwraca {id: url_plakatu}.
         """
@@ -71,7 +68,6 @@ class TMDBClient:
                 result[row["id"]] = None
         return result
 
-    # ── prywatne ─────────────────────────────────────────────
 
     def _load_genres(self):
         data = self._get("/genre/movie/list", {"language": "en-US"})
